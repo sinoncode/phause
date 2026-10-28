@@ -557,6 +557,139 @@ function ComparisonTable() {
     );
 }
 
+
+/* ══════════════════ REQUEST A DEMO ══════════════════ */
+function RequestDemo() {
+    const benefits = [
+        "See Phause in action",
+        "Explore the right plan for your team",
+        "Get answers from security experts",
+    ];
+
+    return (
+        <section
+            id="request-demo"
+            className="relative py-20 md:py-28 overflow-hidden"
+        >
+            {/* Subtle background glow */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-phause-cyan/[0.07] blur-[140px]" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-phause-cyan/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-phause-teal/20 to-transparent" />
+            </div>
+
+            <div className="relative max-w-6xl mx-auto px-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 28 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.65, ease: "easeOut" }}
+                    className="relative rounded-[2rem] border border-phause-cyan/20 bg-slate-950/60 p-8 sm:p-10 md:p-14 overflow-hidden"
+                >
+                    {/* Decorative accent */}
+                    <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-phause-cyan/60 to-transparent" />
+
+                    <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-10 md:gap-14 items-center">
+                        {/* Left content */}
+                        <div>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-phause-cyan/20 bg-phause-cyan/[0.08] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-phause-cyan mb-6">
+                                <span className="w-1.5 h-1.5 rounded-full bg-phause-cyan" />
+                                Personalized Demo
+                            </span>
+
+                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5">
+                                See smarter security
+                                <br className="hidden sm:block" />
+                                <span className="text-gradient">
+                                    in action.
+                                </span>
+                            </h2>
+
+                            <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-xl mb-8">
+                                Discover how Phause can help your team
+                                detect threats, simplify security operations,
+                                and choose the right protection for your needs.
+                            </p>
+
+                            <motion.a
+                                href="/contact"
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="group inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-phause-cyan to-phause-teal px-7 py-4 font-bold text-phause-dark shadow-[0_8px_30px_rgba(0,216,201,0.15)] hover:shadow-[0_10px_35px_rgba(0,216,201,0.28)] transition-shadow duration-300"
+                            >
+                                Request Your Demo
+                                <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                            </motion.a>
+
+                            <p className="text-xs text-slate-500 mt-4">
+                                Let's find the right security solution for your team.
+                            </p>
+                        </div>
+
+                        {/* Right benefits panel */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 18 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.15 }}
+                            className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8"
+                        >
+                            <div className="flex items-center gap-3 mb-7">
+                                <div className="w-11 h-11 rounded-xl bg-phause-cyan/10 border border-phause-cyan/15 flex items-center justify-center">
+                                    <ShieldCheck className="w-6 h-6 text-phause-cyan" />
+                                </div>
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">
+                                        Your demo, your priorities
+                                    </h3>
+                                    <p className="text-sm text-slate-500 mt-1">
+                                        Focused on what matters to you
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-5">
+                                {benefits.map((benefit, index) => (
+                                    <motion.div
+                                        key={benefit}
+                                        initial={{ opacity: 0, x: 12 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{
+                                            duration: 0.4,
+                                            delay: 0.2 + index * 0.1,
+                                        }}
+                                        className="flex items-start gap-3"
+                                    >
+                                        <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-phause-cyan/10 flex items-center justify-center">
+                                            <Check className="w-3 h-3 text-phause-cyan" />
+                                        </span>
+
+                                        <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+                                            {benefit}
+                                        </p>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-white/[0.08]">
+                                <p className="text-sm text-slate-400 leading-relaxed">
+                                    Not sure which plan fits?
+                                    <span className="text-phause-cyan">
+                                        {" "}We'll help you explore your options.
+                                    </span>
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
+                </motion.div>
+            </div>
+        </section>
+    );
+}
+
+
 /* ══════════════════ FAQ ══════════════════ */
 function FAQ() {
     const faqs = [
@@ -715,6 +848,7 @@ export default function SubscriptionPage() {
             <PlansSection />
             <ComparisonTable />
             <GuaranteeBanner />
+            <RequestDemo />
             <FAQ />
             <FinalCTA />
         </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
@@ -19,7 +19,7 @@ import {
   LoaderCircle,
   AlertCircle,
 } from "lucide-react";
-import { createOrganization } from "@/services/organization.service";
+import { createOrganization, verifyEmail } from "@/services/organization.service";
 import { registrationStore } from "@/store/registration.store";
 
 const regions = [
@@ -246,12 +246,14 @@ function PasswordStrength({ password }: { password: string }) {
 export default function RegisterPage() {
   const reduceMotion = useReducedMotion();
 
+  const submittingRef = useRef(false);
   const [form, setForm] = useState<RegistrationForm>(initialForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<
-    "idle" | "submitting" | "success" | "error"
+    "idle" | "submitting" | "otp" | "verifying" | "success" | "error"
   >("idle");
+  const [otp, setOtp] = useState("");
   const [serverMessage, setServerMessage] = useState("");
 
   const updateField = <K extends keyof RegistrationForm>(
@@ -320,13 +322,13 @@ export default function RegisterPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validate()) return;
+    if (!validate() || submittingRef.current) return;
 
+    submittingRef.current = true;
     setStatus("submitting");
     setServerMessage("");
 
     try {
-      const emailDomain = form.email.trim().split("@")[1]?.toLowerCase();
       const regionCodes: Record<string, string> = {
         "North America": "US",
         "South America": "BR",
@@ -338,11 +340,12 @@ export default function RegisterPage() {
       };
 
       await createOrganization({
-        name: form.organisationName.trim(),
-        verifiedEmailDomains: emailDomain ? [emailDomain] : [],
+        fullName: form.fullName.trim(),
+        organizationName: form.organisationName.trim(),
+        email: form.email.trim(),
+        password: form.password,
         region: regionCodes[form.region] ?? "XX",
-        disclaimerEnabled: true,
-        eventRetentionMonths: 12,
+        termsAccepted: form.termsAccepted,
       });
 
       registrationStore.save({
@@ -351,8 +354,10 @@ export default function RegisterPage() {
         email: form.email.trim(),
         region: form.region,
       });
-      setStatus("success");
+      submittingRef.current = false;
+      setStatus("otp");
     } catch (error) {
+      submittingRef.current = false;
       setStatus("error");
 
       setServerMessage(
@@ -360,6 +365,27 @@ export default function RegisterPage() {
           ? error.message
           : "Something went wrong. Please try again.",
       );
+    }
+  };
+
+  const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(otp) || submittingRef.current) {
+      setServerMessage("Enter the 6-digit code sent to your email.");
+      return;
+    }
+
+    submittingRef.current = true;
+    setStatus("verifying");
+    setServerMessage("");
+    try {
+      await verifyEmail(form.email.trim(), otp);
+      submittingRef.current = false;
+      setStatus("success");
+    } catch (error) {
+      submittingRef.current = false;
+      setStatus("otp");
+      setServerMessage(error instanceof Error ? error.message : "Invalid verification code. Please try again.");
     }
   };
 
@@ -512,6 +538,20 @@ export default function RegisterPage() {
                       Continue to dashboard
                       <ArrowRight className="h-4 w-4" />
                     </motion.a>
+                  </motion.div>
+                ) : status === "otp" || status === "verifying" ? (
+                  <motion.div key="otp" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex min-h-[440px] flex-col items-center justify-center text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-phause-cyan/30 bg-phause-cyan/10 text-phause-cyan"><ShieldCheck className="h-7 w-7" /></div>
+                    <h2 className="mt-6 text-3xl font-bold">Verify your email</h2>
+                    <p className="mt-3 text-sm leading-6 text-slate-400">Enter the 6-digit code sent to <span className="font-semibold text-white">{form.email}</span>.</p>
+                    <form onSubmit={handleVerifyOtp} className="mt-7 w-full max-w-sm">
+                      <label htmlFor="page-registration-otp" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Verification code</label>
+                      <input id="page-registration-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setServerMessage(""); }} className="h-16 w-full rounded-2xl border border-white/[0.12] bg-white/[0.04] text-center font-mono text-3xl tracking-[0.55em] text-white outline-none focus:border-phause-cyan/60 focus:ring-2 focus:ring-phause-cyan/10" autoFocus />
+                      {serverMessage && <p role="alert" className="mt-3 text-xs text-red-400">{serverMessage}</p>}
+                      <motion.button type="submit" disabled={status === "verifying" || otp.length !== 6} whileTap={{ scale: 0.985 }} className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-phause-cyan to-phause-teal font-bold text-phause-dark disabled:cursor-not-allowed disabled:opacity-50">
+                        {status === "verifying" ? <><LoaderCircle className="h-5 w-5 animate-spin" /> Verifying...</> : <>Verify email <ArrowRight className="h-4 w-4" /></>}
+                      </motion.button>
+                    </form>
                   </motion.div>
                 ) : (
                   <motion.div

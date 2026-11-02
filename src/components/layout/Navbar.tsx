@@ -109,7 +109,7 @@ export default function Navbar() {
               ))}
               <div className="flex gap-4 pt-3 border-t border-phause-border">
                 <a
-                  href="#login"
+                  href="https://phause-sumit.vercel.app/organisations/org-user"
                   className="flex-1 text-center py-2.5 rounded-full border border-phause-cyan/40 text-phause-cyan font-semibold"
                 >
                   Login

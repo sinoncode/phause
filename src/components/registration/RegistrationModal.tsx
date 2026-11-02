@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, AtSign, Building2, Check, ChevronDown, Eye, EyeOff, Globe2, LoaderCircle, LockKeyhole, ShieldCheck, UserRound, X } from "lucide-react";
-import { createOrganization } from "@/services/organization.service";
+import { createOrganization, verifyEmail } from "@/services/organization.service";
 import { registrationStore } from "@/store/registration.store";
 
 const regions = ["North America", "South America", "Europe", "Asia Pacific", "Middle East", "Africa", "Other"];
@@ -17,10 +17,12 @@ type Errors = Partial<Record<Field, string>>;
 export default function RegistrationModal({ open, onClose }: Props) {
   const reduceMotion = useReducedMotion();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const submittingRef = useRef(false);
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "otp" | "verifying" | "success">("idle");
+  const [otp, setOtp] = useState("");
   const [serverError, setServerError] = useState("");
 
   useEffect(() => {
@@ -56,18 +58,41 @@ export default function RegistrationModal({ open, onClose }: Props) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!validate()) return;
+    if (!validate() || submittingRef.current) return;
+    submittingRef.current = true;
     setStatus("submitting");
     setServerError("");
     try {
       const regionCodes: Record<string, string> = { "North America": "US", "South America": "BR", Europe: "DE", "Asia Pacific": "IN", "Middle East": "AE", Africa: "ZA", Other: "XX" };
-      const emailDomain = form.email.trim().split("@")[1]?.toLowerCase();
-      await createOrganization({ name: form.organisationName.trim(), verifiedEmailDomains: emailDomain ? [emailDomain] : [], region: regionCodes[form.region] ?? "XX", disclaimerEnabled: true, eventRetentionMonths: 12 });
+      await createOrganization({ fullName: form.fullName.trim(), organizationName: form.organisationName.trim(), email: form.email.trim(), password: form.password, region: regionCodes[form.region] ?? "XX", termsAccepted: form.termsAccepted });
       registrationStore.save({ fullName: form.fullName.trim(), organisationName: form.organisationName.trim(), email: form.email.trim(), region: form.region });
-      setStatus("success");
+      submittingRef.current = false;
+      setStatus("otp");
     } catch (error) {
+      submittingRef.current = false;
       setStatus("idle");
       setServerError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    }
+  };
+
+  const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(otp) || submittingRef.current) {
+      setServerError("Enter the 6-digit code sent to your email.");
+      return;
+    }
+
+    submittingRef.current = true;
+    setStatus("verifying");
+    setServerError("");
+    try {
+      await verifyEmail(form.email.trim(), otp);
+      submittingRef.current = false;
+      setStatus("success");
+    } catch (error) {
+      submittingRef.current = false;
+      setStatus("otp");
+      setServerError(error instanceof Error ? error.message : "Invalid verification code. Please try again.");
     }
   };
 
@@ -100,6 +125,20 @@ export default function RegistrationModal({ open, onClose }: Props) {
                   <h2 className="mt-7 text-3xl font-bold">Welcome to Phause!</h2>
                   <p className="mt-3 max-w-sm text-sm leading-6 text-slate-400">Your account has been created and your workspace is ready.</p>
                   <button type="button" onClick={onClose} className="mt-7 rounded-xl bg-phause-cyan px-7 py-3 text-sm font-bold text-phause-dark">Continue</button>
+                </motion.div>
+              ) : status === "otp" || status === "verifying" ? (
+                <motion.div key="otp" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex min-h-[520px] flex-col justify-center px-6 py-10 sm:px-12">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-phause-cyan/30 bg-phause-cyan/10 text-phause-cyan"><ShieldCheck className="h-7 w-7" /></div>
+                  <h2 className="text-center text-3xl font-bold">Verify your email</h2>
+                  <p className="mx-auto mt-3 max-w-md text-center text-sm leading-6 text-slate-400">Enter the 6-digit code sent to <span className="font-semibold text-white">{form.email}</span>.</p>
+                  <form onSubmit={handleVerifyOtp} className="mx-auto mt-7 w-full max-w-sm">
+                    <label htmlFor="registration-otp" className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Verification code</label>
+                    <input id="registration-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(event) => { setOtp(event.target.value.replace(/\D/g, "").slice(0, 6)); setServerError(""); }} className="h-16 w-full rounded-2xl border border-white/[0.12] bg-white/[0.04] text-center font-mono text-3xl tracking-[0.55em] text-white outline-none transition-all focus:border-phause-cyan/60 focus:ring-2 focus:ring-phause-cyan/10" autoFocus />
+                    {serverError && <p role="alert" className="mt-3 text-center text-xs text-red-400">{serverError}</p>}
+                    <motion.button type="submit" disabled={status === "verifying" || otp.length !== 6} whileTap={{ scale: 0.985 }} className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-phause-cyan to-phause-teal font-bold text-phause-dark disabled:cursor-not-allowed disabled:opacity-50">
+                      {status === "verifying" ? <><LoaderCircle className="h-5 w-5 animate-spin" /> Verifying...</> : <>Verify email <ArrowRight className="h-[18px] w-[18px]" /></>}
+                    </motion.button>
+                  </form>
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-h-[calc(100vh-3rem)] overflow-y-auto p-6 sm:p-8 md:p-9">

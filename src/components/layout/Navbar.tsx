@@ -7,10 +7,12 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "../../../public/logo/phause-logo.png";
 import { NAV_LINKS, ROUTES } from "@/lib/routes";
+import RegistrationModal from "@/components/registration/RegistrationModal";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
@@ -19,6 +21,7 @@ export default function Navbar() {
   }, []);
 
   return (
+    <>
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -66,17 +69,12 @@ export default function Navbar() {
           </motion.a>
 
           {/* Register Button */}
-          <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}>
-            <Link
-              href={ROUTES.registration}
-              className="relative flex items-center gap-1.5 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold text-phause-dark group"
-            >
+          <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} onClick={() => setRegistrationOpen(true)} className="relative flex items-center gap-1.5 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold text-phause-dark group">
               <span className="absolute inset-0 bg-gradient-to-r from-phause-cyan via-cyan-400 to-phause-teal bg-[length:200%_100%] transition-all duration-500 group-hover:bg-[position:100%_0]" />
               <span className="relative flex items-center gap-1.5">
                 Register <ArrowRight className="h-4 w-4" />
               </span>
-            </Link>
-          </motion.div>
+          </motion.button>
         </div>
 
         {/* Mobile hamburger */}
@@ -116,18 +114,22 @@ export default function Navbar() {
                 >
                   Login
                 </a>
-                <Link
-                  href={ROUTES.registration}
-                  onClick={() => setOpen(false)}
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setRegistrationOpen(true);
+                  }}
                   className="flex-1 text-center py-2.5 rounded-full bg-gradient-to-r from-phause-cyan to-phause-teal text-phause-dark font-bold"
                 >
                   Register
-                </Link>
+                </button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.nav>
+    <RegistrationModal open={registrationOpen} onClose={() => setRegistrationOpen(false)} />
+    </>
   );
 }

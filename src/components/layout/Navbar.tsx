@@ -8,11 +8,13 @@ import Image from "next/image";
 import Logo from "../../../public/logo/phause-logo.png";
 import { NAV_LINKS, ROUTES } from "@/lib/routes";
 import RegistrationModal from "@/components/registration/RegistrationModal";
+import LoginModal from "@/components/auth/LoginModal";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
@@ -59,12 +61,13 @@ export default function Navbar() {
           ))}
 
           {/* Login Button */}
-          <a
-            href="https://phause-sumit.vercel.app/organisations/org-user"
+          <button
+            type="button"
+            onClick={() => setLoginOpen(true)}
             className="px-5 py-2.5 rounded-full text-sm font-semibold border border-phause-cyan/40 text-phause-cyan hover:bg-phause-cyan/10 hover:shadow-[0_0_20px_rgba(0,216,201,0.35)] transition-all duration-300"
           >
             Login
-          </a>
+          </button>
 
           {/* Register Button */}
           <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} onClick={() => setRegistrationOpen(true)} className="relative flex items-center gap-1.5 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold text-phause-dark group">
@@ -106,12 +109,13 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex gap-4 pt-3 border-t border-phause-border">
-                <a
-                  href="https://phause-sumit.vercel.app/organisations/org-user"
+                <button
+                  type="button"
+                  onClick={() => { setOpen(false); setLoginOpen(true); }}
                   className="flex-1 text-center py-2.5 rounded-full border border-phause-cyan/40 text-phause-cyan font-semibold"
                 >
                   Login
-                </a>
+                </button>
                 <button
                   onClick={() => {
                     setOpen(false);
@@ -128,6 +132,7 @@ export default function Navbar() {
       </AnimatePresence>
     </motion.nav>
     <RegistrationModal open={registrationOpen} onClose={() => setRegistrationOpen(false)} />
+    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }

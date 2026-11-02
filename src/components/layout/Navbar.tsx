@@ -59,14 +59,12 @@ export default function Navbar() {
           ))}
 
           {/* Login Button */}
-          <motion.a
+          <a
             href="https://phause-sumit.vercel.app/organisations/org-user"
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.95 }}
             className="px-5 py-2.5 rounded-full text-sm font-semibold border border-phause-cyan/40 text-phause-cyan hover:bg-phause-cyan/10 hover:shadow-[0_0_20px_rgba(0,216,201,0.35)] transition-all duration-300"
           >
             Login
-          </motion.a>
+          </a>
 
           {/* Register Button */}
           <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} onClick={() => setRegistrationOpen(true)} className="relative flex items-center gap-1.5 overflow-hidden rounded-full px-6 py-2.5 text-sm font-bold text-phause-dark group">

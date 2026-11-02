@@ -10,14 +10,22 @@ export const ROUTES = {
   subscriptionCheckout: "/subscription/checkout",
   registration: "/registration",
   contact: "/contact",
+  faq: "/faq",
 } as const;
 
-/** Navigation links shown in the Navbar and Footer */
+/** Navigation links shown in the Navbar */
 export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Home", href: ROUTES.home },
   { label: "About Us", href: ROUTES.about },
+
   { label: "Subscription", href: ROUTES.subscription },
   { label: "Contact Us", href: ROUTES.contact },
+];
+
+/** Quick links shown in the Footer */
+export const FOOTER_LINKS: { label: string; href: string }[] = [
+  ...NAV_LINKS,
+  { label: "FAQ", href: ROUTES.faq },
 ];
 
 /** Footer services column */

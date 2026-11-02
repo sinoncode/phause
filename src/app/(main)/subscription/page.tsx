@@ -14,6 +14,8 @@ import {
 import { PLANS, BILLING_CYCLE_STORAGE_KEY, type Plan, formatPrice } from "./plans";
 import { ROUTES } from "@/lib/routes";
 
+
+
 /* ══════════════════ ANIMATED BACKGROUNDS ══════════════════ */
 function GridBackground() {
     return (

@@ -9,7 +9,7 @@ import Logo from "../../../public/logo/phause-logo.png";
 import { FacebookIcon } from "@/components/icons/lucide-facebook";
 import { InstagramIcon } from "@/components/icons/lucide-instagram";
 import { LinkedinIcon } from "@/components/icons/lucide-linkedin";
-import { NAV_LINKS, FOOTER_SERVICES } from "@/lib/routes";
+import { FOOTER_LINKS, FOOTER_SERVICES } from "@/lib/routes";
 
 const SOCIALS = [
   { icon: FacebookIcon, href: "#", label: "Facebook" },
@@ -77,7 +77,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-5 text-lg">Quick Links</h4>
             <ul className="space-y-3">
-              {NAV_LINKS.map((link) => (
+              {FOOTER_LINKS.map((link) => (
                 <li key={link.label}>
                   <motion.div whileHover={{ x: 6 }}>
                     <Link

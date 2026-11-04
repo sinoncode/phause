@@ -1,3 +1,4 @@
+
 /**
  * Centralized route configuration for Phause.
  * Update URLs here and they propagate everywhere (Navbar, Footer, Sitemap, etc.).
@@ -6,18 +7,31 @@
 export const ROUTES = {
   home: "/",
   about: "/about",
+  services: "/services",
+  blog: "/blog",
+  docs: "/docs",
   subscription: "/subscription",
   subscriptionCheckout: "/subscription/checkout",
   registration: "/registration",
   contact: "/contact",
+  faq: "/faq",
 } as const;
 
-/** Navigation links shown in the Navbar and Footer */
+/** Navigation links shown in the Navbar */
 export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Home", href: ROUTES.home },
   { label: "About Us", href: ROUTES.about },
+  { label: "Services", href: ROUTES.services },
+  { label: "Blog", href: ROUTES.blog },
+  { label: "Docs", href: ROUTES.docs },
   { label: "Subscription", href: ROUTES.subscription },
   { label: "Contact Us", href: ROUTES.contact },
+];
+
+/** Quick links shown in the Footer */
+export const FOOTER_LINKS: { label: string; href: string }[] = [
+  ...NAV_LINKS,
+  { label: "FAQ", href: ROUTES.faq },
 ];
 
 /** Footer services column */

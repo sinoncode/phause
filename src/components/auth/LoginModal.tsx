@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, X } from "lucide-react";
 import { login } from "@/services/auth.service";
 
-const DASHBOARD_URL = "https://phause-sumit.vercel.app/organisations/org-user";
+const DASHBOARD_URL = "https://phause-sumit.vercel.app/auth/sso";
 type Props = { open: boolean; onClose: () => void };
 
 function extractAuthToken(value: unknown): string | null {
@@ -17,6 +17,20 @@ function extractAuthToken(value: unknown): string | null {
 
   for (const key of ["data", "result", "user", "auth", "session", "tokens"] ) {
     const nestedToken = extractAuthToken(record[key]);
+    if (nestedToken) return nestedToken;
+  }
+  return null;
+}
+
+function extractRefreshToken(value: unknown): string | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const directToken = record.refreshToken ?? record.refresh_token;
+
+  if (typeof directToken === "string" && directToken.trim()) return directToken;
+
+  for (const key of ["data", "result", "auth", "session", "tokens"]) {
+    const nestedToken = extractRefreshToken(record[key]);
     if (nestedToken) return nestedToken;
   }
   return null;
@@ -59,11 +73,11 @@ export default function LoginModal({ open, onClose }: Props) {
       const result = await login({ email: email.trim(), password });
       const token = extractAuthToken(result);
       if (!token) throw new Error("Login succeeded, but no authentication token was returned. Please try again.");
-
-      window.localStorage.setItem("phause_auth_token", token);
-      window.sessionStorage.setItem("phause_auth_token", token);
+      const refreshToken = extractRefreshToken(result);
       const dashboardUrl = new URL(DASHBOARD_URL);
-      dashboardUrl.searchParams.set("token", token);
+      const handoff = new URLSearchParams({ access_token: token });
+      if (refreshToken) handoff.set("refresh_token", refreshToken);
+      dashboardUrl.hash = handoff.toString();
       window.location.assign(dashboardUrl.toString());
     } catch (error) {
       setServerError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
